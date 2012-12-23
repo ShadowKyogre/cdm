@@ -115,6 +115,7 @@ if $(checkyesno locktty); then
 	user_sessions=$(who|grep "$USER"|grep tty[0-9]*|cut -d\  -f 2|grep -v "tty$(fgconsole)") 
 	if [[ ! -z ${user_sessions} ]]; then
 		chvt ${user_sessions##tty}
+		exit 0
 	fi
 fi
 
@@ -228,7 +229,7 @@ xstart() {
 		wm_bin="/usr/share/cdm/xinitrc $wm_bin"
 	fi
 
-	serverargs="${serverargs}"
+	serverargs="${serverargs} vt$(fgconsole 2>/dev/null)"
 
 	if $(checkyesno consolekit); then #do first to avoid race conditions
 		startx "ck-launch-session ${wm_bin}" -- ${serverargs} &> /dev/null
