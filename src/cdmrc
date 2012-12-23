@@ -7,10 +7,15 @@ theme=cdm
 countfrom=1
 
 # List all WM binary names
-wmbinlist=(awesome openbox-session)
+# example:
+# wmbinlist=(awesome openbox-session)
 
 # List all WM display names
-wmdisplist=(Awesome Openbox)
+# example:
+# wmdisplist=(Awesome Openbox)
+
+# Intelligently get the available sessions from the *.desktop files laying around
+source /usr/bin/session-scraper
 
 # Allow console login?
 allowconsole=yes
@@ -51,9 +56,8 @@ courtney() {
 	# Allow shutdown?
 	allowshutdown=no
 
-	# Set specific display for user
-	# (Not honored unless locktty=yes)
-	# display=1
+	# Which display to lock to?
+	display=0
 }
 
 ############################
@@ -62,9 +66,6 @@ courtney() {
 
 # Set default display
 display=0
-
-# Where should first X tty be spawned?
-xtty=7
 
 # Restrict tty? (By default, cdm increments X tty, this setting
 # allows administrators to lock users into one specific tty by
@@ -81,8 +82,8 @@ loginshell=no
 
 # The use of consolekit has recently become manditory with hal. However,
 # some users might prefer not using either one. If you don't want to
-# use consolekit, set the following variable to "no".
-consolekit=yes
+# use consolekit or are using logind, set the following variable to "no".
+consolekit=no
 
 # Timeout for waiting for X session to register with consoleKit
 consolekittime=30
@@ -94,7 +95,7 @@ consolekittime=30
 # xterms. Your custom xinitrc should start the window manager supplied as $1
 # instead. There is a sample xinitrc included at /usr/share/cdm/xinitrc.skel.
 # If usexinit=no, then we instead call the chosen window manager directly.
-usexinit=no
+usexinit=yes
 
 # Additional arguments to pass to X server; it will be called as:
 #	exec /usr/bin/X :$display $serverargs vt$((xtty+display))

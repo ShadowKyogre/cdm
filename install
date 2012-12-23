@@ -1,14 +1,11 @@
 #!/bin/bash
 
-if [ "$(id -u)" != "0" ]; then
-	echo "This script must be run as root!"
-	exit 1
-else
-	cd src
-	mkdir -p /usr/{bin,share/cdm}
-	install -m755 cdm /usr/bin/
-	install -Dm644 cdmrc /etc/cdmrc
-	install -m644 xinitrc* /usr/share/cdm/
-	install -Dm755 zzz-cdm-profile.sh /etc/profile.d/zzz-cdm-profile.sh
-	cp -Rf themes /usr/share/cdm/
-fi
+cd src
+mkdir -p "${1}"/usr/{bin,share/cdm}
+install -m755 cdm "${1}"/usr/bin/
+install -m755 xlogout "${1}"/usr/bin/
+install -m755 session-scraper "${1}"/usr/bin/
+install -Dm644 cdmrc "${1}"/etc/cdmrc
+install -m644 xinitrc* "${1}"/usr/share/cdm/
+install -Dm755 zzz-cdm-profile.sh "${1}"/etc/profile.d/zzz-cdm-profile.sh
+cp -Rf themes "${1}"/usr/share/cdm/
