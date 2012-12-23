@@ -7,7 +7,11 @@ do
 file="$(cat $line)"
 name=$(echo "$file"|grep "Name="|sed 's/Name=//')
 if test -n "$name" ;then
-	echo "\"$name\""
+	if [[ "$1" == "-c" ]];then
+		echo "\"$name\""
+	else
+		echo "$name"
+	fi
 fi
 done|sort -u|uniq|tr '\n' ' '|sed 's/[ \t]*$//')
 
@@ -16,7 +20,11 @@ do
 file="$(cat $line)"
 exec="$(echo "$file"|grep "^Exec="|sed 's/Exec=//')"
 if test -n "$exec" ;then
-	echo "\"$exec\""
+	if [[ "$1" == "-c" ]];then
+		echo "\"$exec\""
+	else
+		echo "$exec"
+	fi
 else
 continue;
 fi
