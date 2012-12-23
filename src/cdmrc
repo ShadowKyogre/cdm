@@ -56,16 +56,13 @@ courtney() {
 	# Allow shutdown?
 	allowshutdown=no
 
-	# Which display to lock to?
-	display=0
+	# Lock this person to only one tty?
+	locktty=yes
 }
 
 ############################
 ### SYSTEM CONFIGURATION ###
 ############################
-
-# Set default display
-display=0
 
 # Restrict tty? (By default, cdm increments X tty, this setting
 # allows administrators to lock users into one specific tty by
