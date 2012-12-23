@@ -231,47 +231,10 @@ xstart() {
 	serverargs="${serverargs}"
 
 	if $(checkyesno consolekit); then #do first to avoid race conditions
-		echo -ne "${info} Waiting for ConsoleKit to register X session (timeout ${consolekittime}s)..."
-
-		sleep $consolekittime &
-		clockpid=$!
-	
-		trap "echo -e \"Registered! ${reset}\"" USR1
-	
-		#have to store pid of dbus-monitor this way since dbus-monitor will run until killed.
-		fifo=$(mktemp --dry-run)
-		mkfifo --mode=700 $fifo
-		(dbus-monitor --system type=signal,interface=org.freedesktop.ConsoleKit.Seat,member=SessionAdded & echo $! > $fifo ) | \
-		 sed -un 's|[[:space:]]*object path \"\(/[a-zA-Z0-9/]*\)\"|\1|p' | while read object; do
-			if dbus-send --system --print-reply  --dest=org.freedesktop.ConsoleKit "$object" org.freedesktop.ConsoleKit.Session.GetX11Display | \
-		       	  grep -qF "$display"; then
-				kill -USR1 $$
-				break
-			fi
-		 done &
-
-		 read dbuspid < $fifo
-		 rm -f $fifo
-	fi
-
-	if $(checkyesno loginshell); then
-		setsid bash --login -c "startx $wm_bin -- ${serverargs}" &> /dev/null &
+		startx "ck-launch-session ${wm_bin}" -- ${serverargs} &> /dev/null
 	else
-		setsid startx $wm_bin -- ${serverargs} &> /dev/null &
+		startx $wm_bin -- ${serverargs} &> /dev/null
 	fi
-
-	if [[ -n $clockpid ]]; then
-		#if wait returns with a value >128, it was interrupted by the trap, so registration was sucessful.
-		if wait $clockpid; then
-			echo -e "Timed out, giving up.\nCheck to see if you are wrapping your session with ck-launch-session or increase the timeout. ${reset}"
-			kill $dbuspid
-			exit 1
-		else
-			kill $dbuspid $clockpid
-			exit 0
-		fi
-	fi
-
 	exit 0
 }
 mainmenu
