@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 #   CDM: The Console Display Manager
 #
@@ -27,7 +27,7 @@
 #       MA 02110-1301, USA.
 
 name="Console Display Manager"
-ver="0.5.4"
+ver="0.5.5"
 info="\e[1;34m==>\e[1;37m"
 error="\e[1;31m==>\e[1;37m"
 success="\e[1;32m==>\e[1;37m"
@@ -35,16 +35,16 @@ reset="\e[0m"
 # Ignore SIGINT (^C) and SIGTSTP (^Z)
 trap "" 2 20
 userclientrc=$HOME/.xinitrc
-sysclientrc=/etc/X11/xinit/xinitrc
+sysclientrc=LOCALBASE/etc/X11/xinit/xinitrc
 # userserverrc=$HOME/.xserverrc
-# sysserverrc=/etc/X11/xinit/xserverrc
+# sysserverrc=LOCALBASE/etc/X11/xinit/xserverrc
 
 # Source cdm configuration
-if [[ -f /etc/cdmrc ]]; then
-	source /etc/cdmrc
+if test -f LOCALBASE/etc/cdmrc; then
+	source LOCALBASE/etc/cdmrc
 	count=0
-	while [[ ${count} -lt ${#userconfig[@]} ]]; do
-		if [[ "$USER" == "${userconfig[${count}]}" ]]; then
+	while test ${count} -lt ${#userconfig[@]}; do
+		if test "$USER" == "${userconfig[${count}]}"; then
 			${userconfig[${count}]}
 		fi
 		let count=count+1
@@ -60,22 +60,22 @@ fi
 
 unset DIALOGRC
 # Source theme file
-if [[ ! -z ${theme} ]]; then
-	if [[ -f /usr/share/cdm/themes/${theme} ]]; then
-		DIALOGRC=/usr/share/cdm/themes/${theme}
+if ! test -z ${theme}; then
+	if test -f PREFIX/share/cdm/themes/${theme}; then
+		DIALOGRC=PREFIX/share/cdm/themes/${theme}
 	else
 		echo -e "${info} Theme file ${theme} is invalid, reverting to default theme.${reset}"
 	fi
 fi
-if [[ -z $DIALOGRC ]]; then
-	if [[ -f /usr/share/cdm/themes/default ]]; then
-		DIALOGRC=/usr/share/cdm/themes/default
+if test -z $DIALOGRC; then
+	if test -f PREFIX/share/cdm/themes/default; then
+		DIALOGRC=PREFIX/share/cdm/themes/default
 	else
 		echo -e "${info} A valid theme file was not found, using system defaults.${reset}"
 	fi
 fi
 
-# Based on FreeBSD's /etc/rc.subr
+# Based on FreeBSD's LOCALBASE/etc/rc.subr
 #
 # checkyesno var
 #    Test $1 variable, and warn if not set to YES or NO.
@@ -85,7 +85,7 @@ fi
 checkyesno() {
 	local value=${!1}
 	# debug "checkyesno: $1 is set to $value."
-	if [[ -n $2 ]]; then
+	if test -n $2; then
 		value=${value:-$2}
 	else
 		value=${value:-no}
@@ -113,7 +113,7 @@ if $(checkyesno locktty); then
 	# Verify we have a user logged in on this tty
 	# that is not this tty. 
 	user_sessions=$(who|grep "$USER"|grep tty[0-9]*|cut -d\  -f 2|grep -v "tty$(fgconsole)") 
-	if [[ ! -z ${user_sessions} ]]; then
+	if ! test -z ${user_sessions}; then
 		chvt ${user_sessions##tty}
 		exit 0
 	fi
@@ -123,7 +123,7 @@ mainmenu() {
 	# Generate main menu
 	count=0
 	menu=$(
-		while [[ ${count} -lt ${#wmdisplist[@]} ]]; do
+		while test ${count} -lt ${#wmdisplist[@]}; do
 			echo -ne "$((count+countfrom)) ${wmdisplist[${count}]} "
 			let count=count+1
 		done
@@ -150,7 +150,7 @@ mainmenu() {
 	fi
 	
 	# Override dialog display if only one option is available
-	if ! $(checkyesno allowconsole) && ! $(checkyesno allowshutdown) && [[ ${#wmdisplist[@]} == 1 ]]; then
+	if ! $(checkyesno allowconsole) && ! $(checkyesno allowshutdown) && test ${#wmdisplist[@]} == 1; then
 		wm=$countfrom
 	else
 		# Display selection dialog
@@ -160,7 +160,7 @@ mainmenu() {
 			--ok-label " Select " --cancel-label " Logout " \
 			--menu "Select Window Manager" 0 0 0 ${menu}
 		)
-		if [[ $? != 0 ]]; then
+		if test $? != 0; then
 			clear
 			exit 0
 		fi
@@ -168,9 +168,9 @@ mainmenu() {
 
 	# Set wm_bin
 	clear
-	if [[ ${wm} -eq ${console} ]]; then
+	if test ${wm} -eq ${console}; then
 		exit 2 #2 signals to the profile file to not exit.
-	elif [[ ${wm} -eq ${halt} ]]; then
+	elif test ${wm} -eq ${halt}; then
 		shutdownmenu
 	else
 		let wm=wm-countfrom
@@ -184,9 +184,9 @@ shutdownmenu() {
 	haltmenu=$(
 		for opt in Shutdown Reboot Suspend Hibernate; do
 			# Check if suspend/hibernate is enabled
-			if ([[ $opt != Suspend ]] && [[ $opt != Hibernate ]]) ||
-				([[ $opt == Suspend ]] && $(checkyesno allowsuspend)) ||
-				([[ $opt == Hibernate ]] && $(checkyesno allowhibernate)); then
+			if (test $opt != Suspend && test $opt != Hibernate) ||
+				(test $opt == Suspend && $(checkyesno allowsuspend)) ||
+				(test $opt == Hibernate && $(checkyesno allowhibernate)); then
 				echo -ne "$count $opt "
 				let count=count+1
 			fi
@@ -201,13 +201,13 @@ shutdownmenu() {
 		--menu "Shutdown" 0 0 0 ${haltmenu}
 	)
 	
-	if [[ $? == 0 ]]; then
+	if test $? == 0; then
 		clear
-		if [[ ${haltopt} -eq $countfrom ]]; then
+		if test ${haltopt} -eq $countfrom; then
 			${shutdowncommand}
-		elif [[ ${haltopt} -eq $((countfrom+1)) ]]; then
+		elif test ${haltopt} -eq $((countfrom+1)); then
 			${rebootcommand}
-		elif [[ ${haltopt} -eq $((countfrom+2)) ]] && $(checkyesno allowsuspend); then
+		elif test ${haltopt} -eq $((countfrom+2)) && $(checkyesno allowsuspend); then
 			${suspendcommand}
 		else
 			${hibernatecommand}
@@ -220,13 +220,13 @@ shutdownmenu() {
 xstart() {
 	# Start X
 	if $(checkyesno usexinit); then
-		if [[ -f $userclientrc ]]; then
+		if test -f $userclientrc; then
 			wm_bin="$userclientrc $wm_bin"
-		elif [[ -f $sysclientrc ]]; then
+		elif test -f $sysclientrc; then
 			wm_bin="$sysclientrc $wm_bin"
 		fi
 	else
-		wm_bin="/usr/share/cdm/xinitrc $wm_bin"
+		wm_bin="PREFIX/share/cdm/xinitrc $wm_bin"
 	fi
 
 	serverargs="${serverargs} vt$(fgconsole 2>/dev/null)"

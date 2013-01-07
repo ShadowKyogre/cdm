@@ -1,13 +1,13 @@
 #!/bin/sh
 
-here="$(ls -d -1 /usr/share/xsessions/* 2> /dev/null;ls -d -1 /etc/X11/sessions/* 2> /dev/null)"
+here="$(ls -d -1 PREFIX/share/xsessions/* 2> /dev/null;ls -d -1 LOCALBASE/etc/X11/sessions/* 2> /dev/null)"
 
 wmdisplist=$(echo "$here"|while read line;
 do
 file="$(cat $line)"
 name=$(echo "$file"|grep "Name="|sed 's/Name=//')
 if test -n "$name" ;then
-	if [[ "$1" == "-c" ]];then
+	if test "$1" == "-c";then
 		echo "\"$name\""
 	else
 		echo "$name"
@@ -20,7 +20,7 @@ do
 file="$(cat $line)"
 exec="$(echo "$file"|grep "^Exec="|sed 's/Exec=//')"
 if test -n "$exec" ;then
-	if [[ "$1" == "-c" ]];then
+	if test "$1" == "-c";then
 		echo "\"$exec\""
 	else
 		echo "$exec"
@@ -30,7 +30,7 @@ continue;
 fi
 done|sort -u|uniq|tr '\n' ' '|sed 's/[ \t]*$//')
 
-if [[ "$1" == "-c" ]];then
+if test "$1" == "-c";then
 	echo "wmbinlist=(${wmbinlist})"
 	echo "wmdisplist=(${wmdisplist})"
 fi

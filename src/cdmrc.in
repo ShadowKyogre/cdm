@@ -15,7 +15,7 @@ countfrom=1
 # wmdisplist=(Awesome Openbox)
 
 # Intelligently get the available sessions from the *.desktop files laying around
-source /usr/bin/session-scraper
+source PREFIX/bin/session-scraper
 
 # Allow console login?
 allowconsole=yes
