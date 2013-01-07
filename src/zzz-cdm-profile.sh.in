@@ -1,4 +1,4 @@
-if test -z "$DISPLAY" &&  test -z "$SSH_TTY" && test $(tty) = /dev/tty*; then
+if test -z "$DISPLAY" &&  test -z "$SSH_TTY" && grep -q "$(tty)" LOCALBASE/cdmtty; then
 	# Drop root to console
 	if ! test $EUID -eq 0; then
 		PREFIX/bin/cdm
